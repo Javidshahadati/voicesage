@@ -11,14 +11,22 @@ st.info("این یه نسخه‌ی تستی برای چک کردن Whisper اس�
 
 audio = st.file_uploader("فایل صوتی (mp3, wav, m4a)", type=["mp3", "wav", "m4a", "ogg"])
 
+# انتخاب زبان
+lang_option = st.selectbox(
+    "زبان فایل صوتی:",
+    options=["fa", "en"],
+    format_func=lambda x: "فارسی" if x == "fa" else "English",
+)
+
 if audio and st.button("🎯 تبدیل به متن"):
     with st.spinner("در حال تبدیل..."):
-        url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/openai/whisper"
+        url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/openai/whisper-large-v3-turbo"
         headers = {"Authorization": f"Bearer {CF_API_TOKEN}"}
         files = {"audio": (audio.name, audio.getvalue(), audio.type or "audio/mpeg")}
-        
+        data = {"language": lang_option}
+
         try:
-            r = requests.post(url, headers=headers, files=files, timeout=120)
+            r = requests.post(url, headers=headers, files=files, data=data, timeout=120)
             if r.status_code == 200:
                 result = r.json().get("result", {})
                 st.success("✅ تبدیل موفق!")
