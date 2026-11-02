@@ -8,7 +8,7 @@ st.title("🎙️ VoiceSage — تست Whisper")
 CF_ACCOUNT_ID = st.secrets["CF_ACCOUNT_ID"]
 CF_API_TOKEN = st.secrets["CF_API_TOKEN"]
 
-st.info("این یه نسخه‌ی تستی برای چک کردن Whisper است. یه فایل صوتی کوتاه آپلود کن.")
+st.info("این نسخه‌ی تستی با initial_prompt برای بهبود دقت فارسی است.")
 
 audio = st.file_uploader("فایل صوتی (mp3, wav, m4a)", type=["mp3", "wav", "m4a", "ogg"])
 
@@ -18,6 +18,12 @@ lang_option = st.selectbox(
     options=["fa", "en"],
     format_func=lambda x: "فارسی" if x == "fa" else "English",
 )
+
+# initial_prompt برای راهنمایی مدل
+if lang_option == "fa":
+    initial_prompt = "این یک متن فارسی است. کلمات رایج: سلام، امروز، هوا، آفتابی، است، بابا، آب، داد، من، تو، او، ما، شما، آنها."
+else:
+    initial_prompt = "This is an English transcript. Common words: hello, today, weather, sunny, is, water, gave."
 
 if audio and st.button("🎯 تبدیل به متن"):
     with st.spinner("در حال تبدیل..."):
@@ -35,6 +41,8 @@ if audio and st.button("🎯 تبدیل به متن"):
             "audio": audio_b64,
             "language": lang_option,
             "task": "transcribe",
+            "initial_prompt": initial_prompt,
+            "vad_filter": True,
         }
 
         try:
@@ -48,5 +56,6 @@ if audio and st.button("🎯 تبدیل به متن"):
             else:
                 error_msg = r.text[:500]
                 st.error(f"❌ خطا ({r.status_code}): {error_msg}")
+                st.info("اگه خطا داد، یعنی initial_prompt پشتیبانی نمی‌شه → بریم Google.")
         except Exception as e:
             st.error(f"❌ خطا: {e}")
