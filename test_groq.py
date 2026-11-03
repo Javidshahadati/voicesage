@@ -43,7 +43,7 @@ audio = st.file_uploader("یه فایل صوتی کوتاه آپلود کن", ty
 if audio and st.button("🎯 تست Groq"):
     try:
         files = {"file": (audio.name, audio.getvalue())}
-        data = {"model": "whisper-large-v3", "language": "fa", "response_format": "json"}
+        data = {"model": "whisper-large-v3", "language": "fa", "response_format": "verbose_json"}
         r = requests.post(
             "https://api.groq.com/openai/v1/audio/transcriptions",
             headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
@@ -53,8 +53,12 @@ if audio and st.button("🎯 تست Groq"):
         )
         st.write(f"Status: `{r.status_code}`")
         if r.status_code == 200:
+            result = r.json()
             st.success("✅ Groq جواب داد!")
-            st.text_area("متن:", r.json().get("text", ""), height=200)
+            st.write(f"**مدت صدا:** {result.get('duration', 'نامعلوم')} ثانیه")
+            st.text_area("متن:", result.get("text", ""), height=200)
+            with st.expander("پاسخ کامل API"):
+                st.json(result)
         else:
             st.error(f"❌ خطا: {r.status_code}")
             st.code(r.text[:1000])
