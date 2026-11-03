@@ -85,6 +85,10 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
             if r.status_code == 200:
                 return r.json().get("text", "").strip(), "Groq (turbo)"
             return None, f"Groq error {r.status_code}"
+        except requests.exceptions.Timeout:
+            return None, "زمان درخواست به Groq به پایان رسید"
+        except requests.exceptions.ConnectionError:
+            return None, "اتصال به Groq برقرار نشد"
         except Exception as e:
             return None, f"Groq error: {e}"
     try:
@@ -95,6 +99,8 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
         r = requests.post(url, headers=headers, json=payload, timeout=180)
         r.raise_for_status()
         return r.json().get("result", {}).get("text", "").strip(), "Cloudflare"
+    except requests.exceptions.Timeout:
+        return None, "زمان درخواست به Cloudflare به پایان رسید"
     except Exception as e:
         return None, f"Cloudflare error: {e}"
 
@@ -139,6 +145,40 @@ def translate_text(text, source_lang):
     return r.json()["choices"][0]["message"]["content"].strip()
 
 
+def summarize_text(text, lang="fa"):
+    url = f"{CF_BASE}/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
+    if lang == "fa":
+        system = "تو یه خلاصه‌ساز حرفه‌ای فارسی هستی. متن رو در ۲-۳ جمله خلاصه کن. فقط خلاصه رو برگردون."
+    else:
+        system = "Professional summarizer. Summarize in 2-3 sentences. Return only the summary."
+    payload = {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": text}],
+        "max_tokens": 400, "temperature": 0.3,
+    }
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
+    return r.json()["choices"][0]["message"]["content"].strip()
+
+
+def extract_keywords(text, lang="fa"):
+    url = f"{CF_BASE}/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
+    if lang == "fa":
+        system = "تو یه استخراج‌کننده کلمات کلیدی هستی. ۵-۱۰ کلمه یا عبارت مهم از متن استخراج کن. با کاما جدا کن. فقط لیست رو برگردون."
+    else:
+        system = "Keyword extractor. Extract 5-10 important keywords/phrases. Comma-separated. Return only the list."
+    payload = {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": text}],
+        "max_tokens": 200, "temperature": 0.3,
+    }
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
+    return r.json()["choices"][0]["message"]["content"].strip()
+
+
 def make_srt(text):
     lines = re.split(r'(?<=[.!?؟])\s+', text.strip())
     srt = ""
@@ -154,10 +194,28 @@ def make_srt(text):
     return srt
 
 
+def make_vtt(text):
+    lines = re.split(r'(?<=[.!?؟])\s+', text.strip())
+    vtt = "WEBVTT\n\n"
+    for i, line in enumerate(lines, 1):
+        if not line.strip(): continue
+        start = timedelta(seconds=(i - 1) * 3)
+        end = timedelta(seconds=i * 3)
+        def fmt(t):
+            s = str(t)
+            if "." not in s: s += ".000"
+            return s.replace(".", ",")
+        vtt += f"{fmt(start)} --> {fmt(end)}\n{line.strip()}\n\n"
+    return vtt
+
+
 def word_count(text):
     return len(text.split()) if text else 0
 
 
+# ============================================================
+# بخش قیمت‌ها
+# ============================================================
 with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
     col_free, col_pro = st.columns(2)
     with col_free:
@@ -169,8 +227,8 @@ with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
                 <li>✅ ۳ فایل در روز</li>
                 <li>✅ تا ۲۵ مگابایت</li>
                 <li>✅ رونویسی + اصلاح</li>
-                <li>✅ ترجمه</li>
-                <li>✅ دانلود TXT + SRT</li>
+                <li>✅ ترجمه + خلاصه</li>
+                <li>✅ دانلود TXT + SRT + VTT</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -183,19 +241,70 @@ with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
                 <li>✅ نامحدود</li>
                 <li>✅ تا ۱۰۰ مگابایت</li>
                 <li>✅ رونویسی + اصلاح</li>
-                <li>✅ ترجمه</li>
+                <li>✅ ترجمه + خلاصه</li>
                 <li>✅ پشتیبانی اولویت‌دار</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
     st.caption("⚠️ پرداخت پلن حرفه‌ای به‌زودی فعال می‌شود.")
 
+# ============================================================
+# About + FAQ
+# ============================================================
+with st.expander("ℹ️ درباره VoiceSage", expanded=False):
+    st.markdown("""
+**VoiceSage** ابزار هوش مصنوعی برای تبدیل صدا به متن است — فارسی و انگلیسی.
+
+### 🎯 چرا VoiceSage؟
+- 🎯 **دقت بالا** — مدل Whisper پیشرفته + اصلاح با AI
+- 🌐 **دوزبانه** — فارسی و انگلیسی
+- 🔄 **ترجمه** — با درک زمینه (context-aware)
+- 📝 **خلاصه** — خودکار از متن
+- 🏷️ **کلمات کلیدی** — استخراج خودکار
+- 📥 **دانلود** — TXT، SRT، VTT
+
+### 👨‍💻 سازنده
+Javid Shahadati — RAG Specialist
+
+### 🔗 لینک‌ها
+- [LinkedIn](https://www.linkedin.com/in/javid-shahadati-a867a0447/)
+- [GitHub](https://github.com/javidshahadati)
+""")
+
+with st.expander("❓ سوالات متداول (FAQ)", expanded=False):
+    st.markdown("""
+**چند فایل رایگان دارم؟**  
+۳ فایل در روز. برای استفاده‌ی بیشتر، پلن حرفه‌ای ($۹/ماه) به‌زودی.
+
+**چه فرمت‌هایی پشتیبانی می‌شه؟**  
+MP3، WAV، M4A، OGG، WEBM، FLAC. حداکثر ۲۵ مگابایت.
+
+**چقدر طول می‌کشه؟**  
+فایل ۱ دقیقه‌ای: ~۱۵ ثانیه. فایل ۱۰ دقیقه‌ای: ~۲ دقیقه.
+
+**آیا امن است؟**  
+فایل‌ها فقط برای پردازش استفاده می‌شن، جایی ذخیره نمی‌شن.
+
+**چطور پول بدم؟**  
+پلن حرفه‌ای به‌زودی فعال می‌شود. فعلاً از پلن رایگان استفاده کنید.
+
+**چه زبان‌هایی پشتیبانی می‌شه؟**  
+فعلاً فارسی و انگلیسی. زبان‌های بیشتر به‌زودی.
+
+**آیا می‌تونم متن رو ویرایش کنم؟**  
+بله، بعد از تبدیل، متن نهایی در فیلد قابل ویرایش نمایش داده می‌شه.
+""")
+
+# ============================================================
+# نمایش مصرف + دکمه ریست مخفی
+# ============================================================
 remaining = max(0, FREE_LIMIT - st.session_state.usage_count)
 st.markdown(f'<div class="usage-info">🎁 استفاده‌ی رایگان امروز: <strong>{remaining} از {FREE_LIMIT}</strong> فایل باقی مانده</div>', unsafe_allow_html=True)
 
-# دکمه ریست (فقط برای تست — قبل از انتشار حذف شود)
-if st.session_state.usage_count > 0:
-    if st.button("🔄 ریست تست (فقط برای تست)", key="reset_usage"):
+# دکمه ریست مخفی (فقط با پارامتر admin)
+admin_mode = st.query_params.get("admin") == "MY_SECRET_2026"
+if admin_mode and st.session_state.usage_count > 0:
+    if st.button("🔄 ریست تست (ادمین)", key="reset_usage"):
         st.session_state.usage_count = 0
         st.rerun()
 
@@ -203,6 +312,9 @@ if st.session_state.usage_count >= FREE_LIMIT:
     st.error("🚫 **به محدودیت رایگان رسیدی!**\n\nپلن حرفه‌ای به‌زودی فعال می‌شود.")
     st.stop()
 
+# ============================================================
+# آپلود
+# ============================================================
 st.markdown('<div class="section-title">📤 آپلود فایل صوتی</div>', unsafe_allow_html=True)
 col1, col2 = st.columns([2, 1])
 with col1:
@@ -221,7 +333,7 @@ if audio:
         with st.spinner("🎧 مرحله ۱: رونویسی..."):
             raw_text, provider = whisper_transcribe(audio.getvalue(), lang_option, audio.name)
             if raw_text is None:
-                st.error(f"❌ خطا: {provider}")
+                st.error(f"❌ خطا در رونویسی:\n\n{provider}\n\n💡 لطفاً دوباره تلاش کن یا فایل کوتاه‌تری آپلود کن.")
                 st.stop()
             st.session_state.raw_text = raw_text
             st.session_state.provider = provider
@@ -233,14 +345,19 @@ if audio:
             except Exception as e:
                 st.session_state.corrected = raw_text
                 st.session_state.lang = lang_option
+                st.session_state.llm_error = str(e)
         st.session_state.usage_count += 1
         st.rerun()
 
+# ============================================================
+# نمایش نتایج
+# ============================================================
 if "corrected" in st.session_state:
     corrected = st.session_state.corrected
     raw = st.session_state.get("raw_text", "")
     lang = st.session_state.get("lang", "fa")
     provider = st.session_state.get("provider", "")
+
     st.markdown(f'<div class="section-title">📊 آمار (منبع: {provider})</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -251,16 +368,49 @@ if "corrected" in st.session_state:
         flag = "🇮🇷" if lang == "fa" else "🇬🇧"
         lang_name = "فارسی" if lang == "fa" else "English"
         st.markdown(f'<div class="stat-card"><div class="stat-value">{flag}</div><div class="stat-label">{lang_name}</div></div>', unsafe_allow_html=True)
+
+    if st.session_state.get("llm_error"):
+        st.warning(f"⚠️ LLM اصلاح نشد: {st.session_state.llm_error}")
+
     st.markdown('<div class="section-title">✨ متن نهایی</div>', unsafe_allow_html=True)
     final_text = st.text_area("ویرایش:", corrected, height=200, label_visibility="collapsed")
+
+    # خلاصه + کلمات کلیدی
+    col_s, col_k = st.columns(2)
+    with col_s:
+        if st.button("📝 خلاصه کن", use_container_width=True):
+            with st.spinner("در حال خلاصه‌سازی..."):
+                try:
+                    st.session_state.summary = summarize_text(final_text, lang)
+                except Exception as e:
+                    st.error(f"خطا: {e}")
+    with col_k:
+        if st.button("🏷️ کلمات کلیدی", use_container_width=True):
+            with st.spinner("در حال استخراج..."):
+                try:
+                    st.session_state.keywords = extract_keywords(final_text, lang)
+                except Exception as e:
+                    st.error(f"خطا: {e}")
+
+    if "summary" in st.session_state:
+        st.info(f"**📝 خلاصه:** {st.session_state.summary}")
+    if "keywords" in st.session_state:
+        st.success(f"**🏷️ کلمات کلیدی:** {st.session_state.keywords}")
+
     with st.expander("📝 متن خام"):
         st.code(raw or "(خالی)", language=None)
+
+    # دانلود
     st.markdown('<div class="section-title">📥 دانلود</div>', unsafe_allow_html=True)
-    d1, d2 = st.columns(2)
+    d1, d2, d3 = st.columns(3)
     with d1:
         st.download_button("📄 TXT", data=final_text.encode("utf-8"), file_name=f"voicesage_{lang}.txt", mime="text/plain", use_container_width=True)
     with d2:
         st.download_button("🎬 SRT", data=make_srt(final_text).encode("utf-8"), file_name=f"voicesage_{lang}.srt", mime="text/plain", use_container_width=True)
+    with d3:
+        st.download_button("🎞️ VTT", data=make_vtt(final_text).encode("utf-8"), file_name=f"voicesage_{lang}.vtt", mime="text/vtt", use_container_width=True)
+
+    # ترجمه
     st.markdown('<div class="section-title">🌐 ترجمه</div>', unsafe_allow_html=True)
     target_name = "انگلیسی" if lang == "fa" else "فارسی"
     if st.button(f"🔄 ترجمه به {target_name}"):
@@ -272,3 +422,23 @@ if "corrected" in st.session_state:
     if "translated" in st.session_state:
         st.success(st.session_state.translated)
         st.download_button("📄 دانلود ترجمه", data=st.session_state.translated.encode("utf-8"), file_name=f"translation.txt", mime="text/plain")
+
+    # Feedback
+    st.markdown("---")
+    fb_key = "feedback_state"
+    if st.session_state.get(fb_key) == "up":
+        st.caption("🙏 ممنون — خوشحالم که کمک کرد")
+    elif st.session_state.get(fb_key) == "down":
+        st.caption("📝 ثبت شد — ممنون که کمک کردی بهتر بشم")
+    else:
+        fc1, fc2, fc3 = st.columns([3, 1, 1])
+        with fc1:
+            st.caption("این نتیجه چطور بود؟")
+        with fc2:
+            if st.button("👍", key="fb_up"):
+                st.session_state[fb_key] = "up"
+                st.rerun()
+        with fc3:
+            if st.button("👎", key="fb_down"):
+                st.session_state[fb_key] = "down"
+                st.rerun()
