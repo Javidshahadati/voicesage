@@ -193,14 +193,35 @@ MAX_FILE_MB = 25
 # ============================================================
 # توابع
 # ============================================================
-def whisper_transcribe(audio_bytes, lang="fa"):
-    audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-    url = f"{CF_BASE}/run/@cf/openai/whisper-large-v3-turbo"
+def llm_correct(raw_text, lang="fa"):
+    url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-    payload = {"audio": audio_b64, "language": lang, "task": "transcribe"}
-    r = requests.post(url, headers=headers, json=payload, timeout=180)
+
+    if lang == "fa":
+        system = """تو یه ویرایشگر محافظه‌کار متن فارسی هستی.
+
+قوانین سختگیرانه:
+1. هیچ کلمه‌ای رو حذف نکن — هر چیزی که کاربر گفته باید بمونه
+2. عددها رو تغییر نده — «سه چهارتا» رو «۳ تا» نکن
+3. فقط غلط‌های واضح شنیداری رو اصلاح کن (مثلاً «کوبی» → «خوبی»)
+4. اگه شک داری، متن اصلی رو نگه دار
+5. نقطه‌گذاری اضافه کن
+6. فقط متن اصلاح‌شده رو برگردون"""
+    else:
+        system = "You are a conservative text editor. NEVER delete words or change numbers. Only fix obvious mishearings. Add punctuation. Return only corrected text."
+
+    payload = {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": f"متن خام:\n{raw_text}"},
+        ],
+        "max_tokens": 800,
+        "temperature": 0.2,
+    }
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
     r.raise_for_status()
-    return r.json().get("result", {}).get("text", "").strip()
+    return r.json()["choices"][0]["message"]["content"].strip()
 
 
 def llm_correct(raw_text, lang="fa"):
