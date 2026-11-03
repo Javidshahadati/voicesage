@@ -31,35 +31,17 @@ code, pre { font-family: 'Inter', monospace !important; }
     text-align: center;
     margin-bottom: 2rem;
     box-shadow: 0 20px 60px rgba(30, 64, 175, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: pulse 4s ease-in-out infinite;
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.1); opacity: 0.8; }
 }
 .hero h1 {
     font-size: 2.8rem;
     font-weight: 800;
     margin: 0;
     color: white !important;
-    position: relative;
-    z-index: 1;
 }
 .hero p {
     font-size: 1.1rem;
     opacity: 0.95;
     margin-top: 0.75rem;
-    position: relative;
-    z-index: 1;
 }
 .badges {
     display: flex;
@@ -67,15 +49,12 @@ code, pre { font-family: 'Inter', monospace !important; }
     gap: 0.5rem;
     margin-top: 1.25rem;
     flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
 }
 .badge {
     background: rgba(255,255,255,0.25);
     padding: 0.4rem 1rem;
     border-radius: 20px;
     font-size: 0.85rem;
-    backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.3);
 }
 
@@ -102,26 +81,12 @@ div[data-testid="stFileUploader"] {
     background: #f8fafc;
 }
 
-.stChatMessage {
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid #e2e8f0;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
 .stTextArea textarea {
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     font-family: 'Vazirmatn', sans-serif !important;
     font-size: 1rem;
     line-height: 1.8;
-}
-
-div[data-testid="stExpander"] {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    overflow: hidden;
 }
 
 .section-title {
@@ -149,15 +114,6 @@ div[data-testid="stExpander"] {
     font-size: 0.8rem;
     color: #64748b;
     margin-top: 0.25rem;
-}
-
-.stDownloadButton > button {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    color: white !important;
-    border: none;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
 }
 
 #MainMenu {visibility: hidden;}
@@ -193,6 +149,16 @@ MAX_FILE_MB = 25
 # ============================================================
 # توابع
 # ============================================================
+def whisper_transcribe(audio_bytes, lang="fa"):
+    audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+    url = f"{CF_BASE}/run/@cf/openai/whisper-large-v3-turbo"
+    headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
+    payload = {"audio": audio_b64, "language": lang, "task": "transcribe"}
+    r = requests.post(url, headers=headers, json=payload, timeout=180)
+    r.raise_for_status()
+    return r.json().get("result", {}).get("text", "").strip()
+
+
 def llm_correct(raw_text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
@@ -210,43 +176,6 @@ def llm_correct(raw_text, lang="fa"):
     else:
         system = "You are a conservative text editor. NEVER delete words or change numbers. Only fix obvious mishearings. Add punctuation. Return only corrected text."
 
-    payload = {
-        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": f"متن خام:\n{raw_text}"},
-        ],
-        "max_tokens": 800,
-        "temperature": 0.2,
-    }
-    r = requests.post(url, headers=headers, json=payload, timeout=60)
-    r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
-
-
-def llm_correct(raw_text, lang="fa"):
-    url = f"{CF_BASE}/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-
-        if lang == "fa":
-        system = """تو یه ویرایشگر محافظه‌کار متن فارسی هستی.
-
-قوانین سختگیرانه:
-1. هیچ کلمه‌ای رو حذف نکن — هر چیزی که کاربر گفته باید بمونه (مخصوصاً اعداد، «بابا»، «خوبی»، «چه خبر»، ...)
-2. عددها رو تغییر نده — «سه چهارتا» رو «۳ تا» نکن، همون رو نگه دار
-3. فقط غلط‌های واضح شنیداری رو اصلاح کن (مثلاً «کوبی» → «خوبی»، «چه خواهد» → «چه خبر»)
-4. اگه شک داری، متن اصلی رو نگه دار
-5. نقطه‌گذاری و علائم سجاوندی اضافه کن
-6. فقط متن اصلاح‌شده رو برگردون، بدون توضیح
-
-مثال درست:
-ورودی: «سلام کوبی چه خواهد چه کار می‌کنی با دیشب رفتم مهمونی»
-خروجی: «سلام، خوبی؟ چه خبر؟ چه کار می‌کنی؟ بابا، دیشب رفتم مهمونی.»
-
-مثال غلط (حذف کردن):
-خروجی: «سلام، دیشب رفتم مهمونی.» ← این غلطه چون «بابا» و «خوبی» حذف شدن."""
-    else:
-        system = "You are a conservative text editor. NEVER delete words or change numbers. Only fix obvious mishearings. Add punctuation. Return only corrected text."
     payload = {
         "model": "@cf/meta/llama-3.1-8b-instruct-fast",
         "messages": [
@@ -279,7 +208,11 @@ def make_srt(text):
             continue
         start = timedelta(seconds=(i - 1) * 3)
         end = timedelta(seconds=i * 3)
-        fmt = lambda t: str(t).zfill(8) if "." in str(t) else str(t) + ".000"
+        def fmt(t):
+            s = str(t)
+            if "." not in s:
+                s += ".000"
+            return s
         srt += f"{i}\n{fmt(start)} --> {fmt(end)}\n{line.strip()}\n\n"
     return srt
 
@@ -307,7 +240,6 @@ with col2:
         format_func=lambda x: "🇮🇷 فارسی" if x == "fa" else "🇬🇧 English",
     )
 
-# محدودیت حجم
 if audio and audio.size > MAX_FILE_MB * 1024 * 1024:
     st.error(f"❌ حجم فایل بیشتر از {MAX_FILE_MB} مگابایت است.")
     st.stop()
@@ -352,7 +284,9 @@ if "corrected" in st.session_state:
     with c2:
         st.markdown(f'<div class="stat-card"><div class="stat-value">{len(corrected)}</div><div class="stat-label">کاراکتر</div></div>', unsafe_allow_html=True)
     with c3:
-        st.markdown(f'<div class="stat-card"><div class="stat-value">{"🇮🇷" if lang=="fa" else "🇬🇧"}</div><div class="stat-label">{ "فارسی" if lang=="fa" else "English"}</div></div>', unsafe_allow_html=True)
+        flag = "🇮🇷" if lang == "fa" else "🇬🇧"
+        lang_name = "فارسی" if lang == "fa" else "English"
+        st.markdown(f'<div class="stat-card"><div class="stat-value">{flag}</div><div class="stat-label">{lang_name}</div></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">✨ متن نهایی</div>', unsafe_allow_html=True)
     final_text = st.text_area("ویرایش دستی:", corrected, height=200, label_visibility="collapsed")
@@ -360,7 +294,6 @@ if "corrected" in st.session_state:
     with st.expander("📝 متن خام Whisper (قبل از اصلاح)"):
         st.code(raw or "(خالی)", language=None)
 
-    # دانلود
     st.markdown('<div class="section-title">📥 دانلود</div>', unsafe_allow_html=True)
     d1, d2 = st.columns(2)
     with d1:
@@ -380,9 +313,9 @@ if "corrected" in st.session_state:
             use_container_width=True,
         )
 
-    # ترجمه
     st.markdown('<div class="section-title">🌐 ترجمه</div>', unsafe_allow_html=True)
-    if st.button("🔄 ترجمه به " + ("انگلیسی" if lang == "fa" else "فارسی")):
+    target_name = "انگلیسی" if lang == "fa" else "فارسی"
+    if st.button(f"🔄 ترجمه به {target_name}"):
         with st.spinner("در حال ترجمه..."):
             try:
                 translated = translate_text(final_text, lang)
@@ -395,6 +328,6 @@ if "corrected" in st.session_state:
         st.download_button(
             "📄 دانلود ترجمه",
             data=st.session_state.translated.encode("utf-8"),
-            file_name=f"voicesage_{'en' if lang=='fa' else 'fa'}_translated.txt",
+            file_name=f"voicesage_{'en' if lang == 'fa' else 'fa'}_translated.txt",
             mime="text/plain",
         )
