@@ -193,6 +193,12 @@ with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
 remaining = max(0, FREE_LIMIT - st.session_state.usage_count)
 st.markdown(f'<div class="usage-info">🎁 استفاده‌ی رایگان امروز: <strong>{remaining} از {FREE_LIMIT}</strong> فایل باقی مانده</div>', unsafe_allow_html=True)
 
+# دکمه ریست (فقط برای تست — قبل از انتشار حذف شود)
+if st.session_state.usage_count > 0:
+    if st.button("🔄 ریست تست (فقط برای تست)", key="reset_usage"):
+        st.session_state.usage_count = 0
+        st.rerun()
+
 if st.session_state.usage_count >= FREE_LIMIT:
     st.error("🚫 **به محدودیت رایگان رسیدی!**\n\nپلن حرفه‌ای به‌زودی فعال می‌شود.")
     st.stop()
