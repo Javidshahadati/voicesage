@@ -65,7 +65,6 @@ MAX_FILE_MB = 25
 
 
 def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
-    # اول Groq (turbo — کامل رونویسی می‌کنه)
     if GROQ_API_KEY:
         try:
             url = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -85,7 +84,6 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
         except Exception as e:
             return None, f"Groq network error: {e}"
 
-    # fallback: Cloudflare
     try:
         audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
         url = f"{CF_BASE}/run/@cf/openai/whisper-large-v3-turbo"
@@ -135,13 +133,37 @@ def llm_correct(raw_text, lang="fa"):
 
 
 def translate_text(text, source_lang):
-    target = "en" if source_lang == "fa" else "fa"
-    url = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
+    target_lang = "English" if source_lang == "fa" else "Persian"
+    source_lang_name = "Persian" if source_lang == "fa" else "English"
+    url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-    payload = {"text": text, "source_lang": source_lang, "target_lang": target}
-    r = requests.post(url, headers=headers, json=payload, timeout=60)
+
+    system = f"""You are a professional translator. Translate the following text from {source_lang_name} to {target_lang}.
+
+Rules:
+- Translate the MEANING and CONTEXT, not word-by-word
+- Consider context carefully:
+  * In sports/football: «گل خوردم» = "I conceded goals" (NOT "I ate flowers")
+  * In sports/football: «گل زدم» = "I scored goals" (NOT "I hit flowers")
+  * «با هوش مصنوعی» = "using AI" (not "with artificial intelligence")
+  * «پی اس» = "PS" (PlayStation)
+  * «مهمونی» = "party"
+- Keep names and proper nouns as-is
+- Natural, fluent, human-sounding translation
+- Return ONLY the translation, no explanation, no quotes"""
+
+    payload = {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": text},
+        ],
+        "max_tokens": 1500,
+        "temperature": 0.3,
+    }
+    r = requests.post(url, headers=headers, json=payload, timeout=90)
     r.raise_for_status()
-    return r.json().get("result", {}).get("translated_text", "").strip()
+    return r.json()["choices"][0]["message"]["content"].strip()
 
 
 def make_srt(text):
