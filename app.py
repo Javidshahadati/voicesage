@@ -207,18 +207,25 @@ def llm_correct(raw_text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
 
-    if lang == "fa":
-        system = """تو یه ویرایشگر حرفه‌ای متن فارسی هستی. متن خام از تبدیل صوت میاد و ممکنه غلط املایی، غلط شنیداری، یا نقطه‌گذاری ناقص داشته باشه.
+        if lang == "fa":
+        system = """تو یه ویرایشگر محافظه‌کار متن فارسی هستی.
 
-وظیفه‌ات:
-1. غلط‌های شنیداری رو اصلاح کن
-2. غلط املایی و نقطه‌گذاری رو درست کن
-3. کلمات رو به هم بچسبون و جمله‌ی روان بساز
-4. معنی رو عوض نکن
-5. فقط متن اصلاح‌شده رو برگردون، بدون هیچ توضیح"""
+قوانین سختگیرانه:
+1. هیچ کلمه‌ای رو حذف نکن — هر چیزی که کاربر گفته باید بمونه (مخصوصاً اعداد، «بابا»، «خوبی»، «چه خبر»، ...)
+2. عددها رو تغییر نده — «سه چهارتا» رو «۳ تا» نکن، همون رو نگه دار
+3. فقط غلط‌های واضح شنیداری رو اصلاح کن (مثلاً «کوبی» → «خوبی»، «چه خواهد» → «چه خبر»)
+4. اگه شک داری، متن اصلی رو نگه دار
+5. نقطه‌گذاری و علائم سجاوندی اضافه کن
+6. فقط متن اصلاح‌شده رو برگردون، بدون توضیح
+
+مثال درست:
+ورودی: «سلام کوبی چه خواهد چه کار می‌کنی با دیشب رفتم مهمونی»
+خروجی: «سلام، خوبی؟ چه خبر؟ چه کار می‌کنی؟ بابا، دیشب رفتم مهمونی.»
+
+مثال غلط (حذف کردن):
+خروجی: «سلام، دیشب رفتم مهمونی.» ← این غلطه چون «بابا» و «خوبی» حذف شدن."""
     else:
-        system = "You are a professional text editor. Fix spelling, grammar, and punctuation. Don't change meaning. Return only corrected text."
-
+        system = "You are a conservative text editor. NEVER delete words or change numbers. Only fix obvious mishearings. Add punctuation. Return only corrected text."
     payload = {
         "model": "@cf/meta/llama-3.1-8b-instruct-fast",
         "messages": [
