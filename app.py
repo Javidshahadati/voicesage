@@ -143,18 +143,14 @@ def llm_correct(raw_text, lang="fa"):
     return r.json()["choices"][0]["message"]["content"].strip()
 
 def translate_text(text, source_lang):
-    # مرحله ۱: ترجمه دقیق با m2m100
     target_code = "en" if source_lang == "fa" else "fa"
-    url_m2m = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
+    url = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-    payload_m2m = {"text": text, "source_lang": source_lang, "target_lang": target_code}
-    
-    r1 = requests.post(url_m2m, headers=headers, json=payload_m2m, timeout=60)
-    r1.raise_for_status()
-    raw_translation = r1.json().get("result", {}).get("translated_text", "").strip()
-    
-    if not raw_translation:
-        return text
+    payload = {"text": text, "source_lang": source_lang, "target_lang": target_code}
+
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
+    return r.json().get("result", {}).get("translated_text", "").strip()
     
     # مرحله ۲: روان‌سازی با Llama
     url_llm = f"{CF_BASE}/v1/chat/completions"
