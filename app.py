@@ -108,7 +108,8 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
 def llm_correct(raw_text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-        if lang == "fa":
+
+    if lang == "fa":
         system = """تو یه ویرایشگر حرفه‌ای متن فارسی هستی که متن پیاده‌شده از صوت رو اصلاح می‌کنی.
 
 قوانین:
@@ -126,16 +127,20 @@ def llm_correct(raw_text, lang="fa"):
 6. فقط متن اصلاح‌شده رو برگردون — بدون هیچ توضیح، پرانتز، یا عبارت اضافه
 7. هرگز متن اصلی رو کنار جواب ننویس"""
     else:
-        system = "Conservative text editor. Fix obvious mishearings only. Add punctuation. Return only corrected text."
+        system = "Professional text editor. Fix obvious mishearings only. NEVER delete words or change numbers. Add punctuation. Return only corrected text."
+
     payload = {
         "model": "@cf/meta/llama-3.1-8b-instruct-fast",
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": f"متن خام:\n{raw_text}"}],
-        "max_tokens": 1000, "temperature": 0.2,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": f"متن خام:\n{raw_text}"},
+        ],
+        "max_tokens": 1000,
+        "temperature": 0.2,
     }
     r = requests.post(url, headers=headers, json=payload, timeout=60)
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
-
 
 def translate_text(text, source_lang):
     target_lang = "English" if source_lang == "fa" else "Persian"
