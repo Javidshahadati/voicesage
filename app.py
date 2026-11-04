@@ -147,16 +147,33 @@ def translate_text(text, source_lang):
     source_name = "Persian" if source_lang == "fa" else "English"
     url = f"{CF_BASE}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-    system = f"Professional translator. Translate from {source_name} to {target_lang}. Context-aware (sports: گل خوردم=conceded goals, گل زدم=scored goals). Return ONLY translation."
+
+    system = f"""You are a professional translator. Translate the following text from {source_name} to {target_lang}.
+
+RULES:
+- Translate MEANING, not word-by-word.
+- Consider context carefully:
+  * «آب داد» = "gave water" (NOT "it's raining")
+  * «گل خوردم» (sports) = "conceded goals" (NOT "ate flowers")
+  * «گل زدم» (sports) = "scored goals"
+  * «با هوش مصنوعی» = "using AI"
+  * «پی اس» = "PS" (PlayStation)
+- Keep names and proper nouns as-is.
+- Do NOT add words that are not in the original text.
+- Return ONLY the translation, no explanation, no quotes."""
+
     payload = {
         "model": "@cf/meta/llama-3.1-8b-instruct-fast",
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": text}],
-        "max_tokens": 1500, "temperature": 0.3,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": text},
+        ],
+        "max_tokens": 1500,
+        "temperature": 0.2,
     }
     r = requests.post(url, headers=headers, json=payload, timeout=90)
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
-
 
 def summarize_text(text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
