@@ -143,37 +143,51 @@ def llm_correct(raw_text, lang="fa"):
     return r.json()["choices"][0]["message"]["content"].strip()
 
 def translate_text(text, source_lang):
-    target_lang = "English" if source_lang == "fa" else "Persian"
-    source_name = "Persian" if source_lang == "fa" else "English"
-    url = f"{CF_BASE}/v1/chat/completions"
+    # مرحله ۱: ترجمه دقیق با m2m100
+    target_code = "en" if source_lang == "fa" else "fa"
+    url_m2m = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
+    payload_m2m = {"text": text, "source_lang": source_lang, "target_lang": target_code}
+    
+    r1 = requests.post(url_m2m, headers=headers, json=payload_m2m, timeout=60)
+    r1.raise_for_status()
+    raw_translation = r1.json().get("result", {}).get("translated_text", "").strip()
+    
+    if not raw_translation:
+        return text
+    
+    # مرحله ۲: روان‌سازی با Llama
+    url_llm = f"{CF_BASE}/v1/chat/completions"
+    target_lang_name = "English" if source_lang == "fa" else "Persian"
+    
+    system = f"""You are a professional translator. Polish the following {target_lang_name} translation to sound natural.
 
-    system = f"""You are a professional translator. Translate the following text from {source_name} to {target_lang}.
+STRICT RULES:
+- Do NOT change the meaning
+- Do NOT add any words not in the original translation
+- Do NOT delete any information
+- Only fix grammar, word order, and phrasing
+- Return ONLY the polished text, no explanation, no quotes"""
 
-RULES:
-- Translate MEANING, not word-by-word.
-- Consider context carefully:
-  * «آب داد» = "gave water" (NOT "it's raining")
-  * «گل خوردم» (sports) = "conceded goals" (NOT "ate flowers")
-  * «گل زدم» (sports) = "scored goals"
-  * «با هوش مصنوعی» = "using AI"
-  * «پی اس» = "PS" (PlayStation)
-- Keep names and proper nouns as-is.
-- Do NOT add words that are not in the original text.
-- Return ONLY the translation, no explanation, no quotes."""
-
-    payload = {
+    payload_llm = {
         "model": "@cf/meta/llama-3.1-8b-instruct-fast",
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user", "content": text},
+            {"role": "user", "content": raw_translation},
         ],
         "max_tokens": 1500,
         "temperature": 0.2,
     }
-    r = requests.post(url, headers=headers, json=payload, timeout=90)
-    r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
+    
+    try:
+        r2 = requests.post(url_llm, headers=headers, json=payload_llm, timeout=60)
+        r2.raise_for_status()
+        polished = r2.json()["choices"][0]["message"]["content"].strip()
+        if len(polished) < len(raw_translation) * 0.6:
+            return raw_translation
+        return polished
+    except Exception:
+        return raw_translation
 
 def summarize_text(text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
