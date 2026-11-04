@@ -18,8 +18,75 @@ html, body, [class*="css"] { font-family: 'Vazirmatn', -apple-system, sans-serif
 code, pre { font-family: 'Inter', monospace !important; }
 .hero {
     background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #db2777 100%);
-    padding: 2.5rem 1.5rem; border-radius: 24px; color: white; text-align: center;
-    margin-bottom: 2rem; box-shadow: 0 20px 60px rgba(30, 64, 175, 0.3);
+    padding: 3rem 1.5rem;
+    border-radius: 28px;
+    color: white;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 20px 60px rgba(30, 64, 175, 0.35);
+    position: relative;
+    overflow: hidden;
+    animation: heroFadeIn 0.8s ease-out;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    animation: heroPulse 6s ease-in-out infinite;
+    pointer-events: none;
+}
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0;
+    color: white !important;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.15);
+}
+.hero p {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin-top: 0.75rem;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
+}
+.badges {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+.badge {
+    background: rgba(255,255,255,0.22);
+    padding: 0.5rem 1.1rem;
+    border-radius: 24px;
+    font-size: 0.88rem;
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.badge:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-2px);
+}
+
+@keyframes heroFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroPulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.1); opacity: 0.9; }
 }
 .hero h1 { font-size: 2.8rem; font-weight: 800; margin: 0; color: white !important; }
 .hero p { font-size: 1.1rem; opacity: 0.95; margin-top: 0.75rem; }
