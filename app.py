@@ -16,230 +16,217 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
 
 html, body, [class*="css"] {
-    font-family: 'Vazirmatn', sans-serif !important;
-    background: #000 !important;
+    font-family: 'Vazirmatn', -apple-system, sans-serif !important;
 }
-.stApp { background: transparent !important; }
-.block-container {
-    padding-top: 2rem !important;
-    max-width: 900px !important;
-}
+code, pre { font-family: 'Inter', monospace !important; }
 
-/* شبکه‌ی نئون پس‌زمینه */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-        linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-    background-size: 50px 50px;
-    z-index: 0;
-    pointer-events: none;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
-}
-
-/* Hero */
-.neon-hero {
-    position: relative;
-    z-index: 1;
+/* ============ Hero ============ */
+.hero {
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #db2777 100%);
+    padding: 3rem 1.5rem;
+    border-radius: 24px;
+    color: white;
     text-align: center;
-    padding: 2rem 1rem 3rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 60px rgba(30, 64, 175, 0.25);
+    position: relative;
+    overflow: hidden;
 }
-.neon-line-top {
-    width: 100px;
-    height: 2px;
-    background: #06b6d4;
-    margin: 0 auto 2rem;
-    box-shadow:
-        0 0 10px #06b6d4,
-        0 0 25px #06b6d4,
-        0 0 50px #06b6d4;
-    animation: lineGlow 2s ease-in-out infinite alternate;
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    animation: heroFloat 8s ease-in-out infinite;
+    pointer-events: none;
 }
-.neon-hero h1 {
-    font-size: 4rem;
+@keyframes heroFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, -30px); }
+}
+.hero h1 {
+    font-size: 3rem;
     font-weight: 900;
     margin: 0;
-    letter-spacing: -2px;
-    line-height: 1;
-    color: #fff;
-    text-shadow:
-        0 0 10px rgba(236, 72, 153, 0.9),
-        0 0 30px rgba(236, 72, 153, 0.7),
-        0 0 60px rgba(236, 72, 153, 0.4);
-    animation: textPulse 3s ease-in-out infinite alternate;
+    color: white !important;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -1px;
 }
-.neon-hero p {
-    font-size: 1.5rem;   /* ← فارسی بزرگ‌تر */
-    color: #06b6d4;
-    margin: 1.5rem 0;
+.hero .subtitle {
+    font-size: 1.35rem;
+    opacity: 0.95;
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
     font-weight: 400;
-    line-height: 1.8;
-    letter-spacing: 0.5px;
-    text-shadow:
-        0 0 10px rgba(6, 182, 212, 0.7),
-        0 0 25px rgba(6, 182, 212, 0.4);
+    line-height: 1.7;
 }
-.neon-line-mid {
-    width: 100%;
-    max-width: 500px;
-    height: 1px;
-    margin: 0 auto 2rem;
-    background: linear-gradient(90deg, transparent, #ec4899, #06b6d4, #a855f7, transparent);
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-}
-.neon-badges {
+.hero-badges {
     display: flex;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
     flex-wrap: wrap;
-    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
 }
-.neon-badge {
-    padding: 0.7rem 1.4rem;
-    background: transparent;
-    border: 1px solid #06b6d4;
-    border-radius: 6px;
-    font-size: 1rem;   /* ← فارسی بزرگ‌تر */
-    color: #06b6d4;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
-    box-shadow:
-        0 0 10px rgba(6, 182, 212, 0.2),
-        inset 0 0 10px rgba(6, 182, 212, 0.05);
+.hero-badge {
+    background: rgba(255, 255, 255, 0.22);
+    padding: 0.5rem 1.2rem;
+    border-radius: 24px;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-weight: 500;
     transition: all 0.3s;
 }
-.neon-badge:hover {
-    background: rgba(6, 182, 212, 0.1);
-    box-shadow:
-        0 0 20px rgba(6, 182, 212, 0.5),
-        inset 0 0 15px rgba(6, 182, 212, 0.1);
+.hero-badge:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
 }
 
-@keyframes lineGlow {
-    from { box-shadow: 0 0 10px #06b6d4, 0 0 25px #06b6d4, 0 0 50px #06b6d4; }
-    to { box-shadow: 0 0 15px #06b6d4, 0 0 35px #06b6d4, 0 0 70px #06b6d4; }
-}
-@keyframes textPulse {
-    from { text-shadow: 0 0 10px rgba(236,72,153,0.9), 0 0 30px rgba(236,72,153,0.7), 0 0 60px rgba(236,72,153,0.4); }
-    to { text-shadow: 0 0 15px rgba(236,72,153,1), 0 0 40px rgba(236,72,153,0.9), 0 0 80px rgba(236,72,153,0.6); }
+/* ============ Section titles ============ */
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 1.75rem 0 1rem 0;
+    padding-right: 0.75rem;
+    border-right: 4px solid #7c3aed;
 }
 
-/* دکمه‌ها */
+/* ============ Buttons ============ */
 .stButton > button {
-    background: transparent !important;
-    color: #06b6d4 !important;
-    border: 1.5px solid #06b6d4 !important;
-    border-radius: 8px !important;
-    padding: 0.8rem 1.6rem !important;   /* ← بزرگ‌تر */
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.7rem 1.5rem !important;
     font-weight: 600 !important;
-    font-size: 1.05rem !important;   /* ← فارسی بزرگ‌تر */
-    letter-spacing: 0.5px !important;
-    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5) !important;
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2) !important;
-    transition: all 0.3s !important;
+    font-size: 1rem !important;
+    transition: all 0.25s !important;
+    box-shadow: 0 4px 15px rgba(30, 64, 175, 0.2) !important;
 }
 .stButton > button:hover {
-    background: rgba(6, 182, 212, 0.1) !important;
-    box-shadow: 0 0 25px rgba(6, 182, 212, 0.5) !important;
-    color: #67e8f9 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35) !important;
 }
 
-/* فایل آپلودر */
+/* ============ Uploader ============ */
 div[data-testid="stFileUploader"] {
-    border: 2px dashed rgba(6, 182, 212, 0.4);
-    border-radius: 16px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
     padding: 1rem;
-    background: rgba(6, 182, 212, 0.03);
-    box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.05);
+    background: #f8fafc;
+    transition: all 0.3s;
+}
+div[data-testid="stFileUploader"]:hover {
+    border-color: #7c3aed;
+    background: #faf5ff;
 }
 
-/* Textarea */
+/* ============ Textarea ============ */
 .stTextArea textarea {
-    background: rgba(10, 10, 15, 0.9) !important;
-    color: #fff !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(6, 182, 212, 0.3) !important;
+    border: 1px solid #e2e8f0 !important;
     font-family: 'Vazirmatn', sans-serif !important;
-    font-size: 1.05rem !important;   /* ← فارسی بزرگ‌تر */
+    font-size: 1.05rem !important;
     line-height: 1.9 !important;
-    box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05) !important;
 }
 
-/* عنوان بخش‌ها */
-.section-title {
-    font-size: 1.5rem;   /* ← فارسی بزرگ‌تر */
-    font-weight: 700;
-    color: #06b6d4;
-    margin: 2rem 0 1rem 0;
-    padding-right: 0.75rem;
-    border-right: 3px solid #ec4899;
-    text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-}
-
-/* کارت آمار */
+/* ============ Stats cards ============ */
 .stat-card {
-    background: rgba(10, 10, 15, 0.8);
-    border-radius: 12px;
-    padding: 1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    border-radius: 14px;
+    padding: 1.25rem;
     text-align: center;
-    border: 1px solid rgba(6, 182, 212, 0.25);
-    box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.1);
+    border-color: #c7d2fe;
 }
 .stat-value {
-    font-size: 2rem;   /* ← بزرگ‌تر */
+    font-size: 2rem;
     font-weight: 800;
-    color: #06b6d4;
-    text-shadow: 0 0 15px rgba(6, 182, 212, 0.7);
+    background: linear-gradient(135deg, #1e40af, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
 }
 .stat-label-old {
-    font-size: 0.95rem;   /* ← بزرگ‌تر */
-    color: rgba(255, 255, 255, 0.55);
-    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-top: 0.35rem;
+    font-weight: 500;
 }
 
-/* Usage info */
+/* ============ Usage info ============ */
 .usage-info {
-    background: rgba(236, 72, 153, 0.08);
-    border: 1px solid rgba(236, 72, 153, 0.35);
+    background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%);
+    border: 1px solid #c7d2fe;
     border-radius: 12px;
-    padding: 0.85rem 1rem;
-    font-size: 1.05rem;   /* ← بزرگ‌تر */
-    color: #fbcfe8;
+    padding: 0.9rem 1.2rem;
+    font-size: 1.05rem;
+    color: #3730a3;
     text-align: center;
     margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+    font-weight: 500;
 }
 
-/* Pricing cards */
+/* ============ Pricing cards ============ */
 .pricing-card {
-    border-radius: 16px;
-    padding: 1.5rem;
+    border-radius: 20px;
+    padding: 1.75rem 1.5rem;
     text-align: center;
-    border: 1px solid rgba(6, 182, 212, 0.3);
-    background: rgba(10, 10, 15, 0.8);
-    box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.05);
+    border: 2px solid #e2e8f0;
+    background: white;
+    transition: all 0.3s;
+    height: 100%;
+}
+.pricing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
 }
 .pricing-card.pro {
-    border-color: rgba(236, 72, 153, 0.5);
-    background: rgba(236, 72, 153, 0.05);
-    box-shadow: 0 0 30px rgba(236, 72, 153, 0.2), inset 0 0 30px rgba(236, 72, 153, 0.05);
+    border-color: #7c3aed;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
 }
-.pricing-title { font-size: 1.3rem; font-weight: 700; color: #fff; }
-.pricing-price { font-size: 2.2rem; font-weight: 800; color: #06b6d4; margin: 0.5rem 0; text-shadow: 0 0 15px rgba(6,182,212,0.5); }
-.pricing-price.pro { color: #ec4899; text-shadow: 0 0 15px rgba(236,72,153,0.5); }
-.pricing-features { text-align: right; font-size: 1rem; color: rgba(255,255,255,0.75); margin-top: 1rem; list-style: none; padding: 0; line-height: 1.9; }
-.pricing-features li { margin: 0.5rem 0; }
+.pricing-title { font-size: 1.3rem; font-weight: 700; color: #1e293b; }
+.pricing-price { font-size: 2.4rem; font-weight: 800; color: #1e40af; margin: 0.75rem 0; }
+.pricing-price.pro { color: #7c3aed; }
+.pricing-features { text-align: right; font-size: 1rem; color: #475569; margin-top: 1rem; list-style: none; padding: 0; line-height: 2; }
+.pricing-features li { margin: 0.4rem 0; }
 
-/* Mobile */
+/* ============ Expanders ============ */
+div[data-testid="stExpander"] {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: white !important;
+    margin: 0.5rem 0 !important;
+}
+div[data-testid="stExpander"] summary {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    padding: 0.85rem 1rem !important;
+}
+div[data-testid="stExpander"] summary:hover {
+    color: #7c3aed !important;
+}
+
+/* ============ Mobile ============ */
 @media (max-width: 600px) {
-    .neon-hero h1 { font-size: 2.6rem; letter-spacing: -1px; }
-    .neon-hero p { font-size: 1.15rem; }
-    .neon-badge { font-size: 0.9rem; padding: 0.6rem 1.1rem; }
-    .neon-line-top { margin-bottom: 1.5rem; }
-    .section-title { font-size: 1.3rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero .subtitle { font-size: 1.1rem; }
+    .hero { padding: 2rem 1rem; }
+    .section-title { font-size: 1.2rem; }
 }
 
 #MainMenu {visibility: hidden;}
@@ -251,16 +238,14 @@ footer {visibility: hidden;}
 # Hero
 # ============================================================
 st.markdown("""
-<div class="neon-hero">
-    <div class="neon-line-top"></div>
+<div class="hero">
     <h1>🎙️ VoiceSage</h1>
-    <p>صدا را به متن تبدیل کن — دقیق، سریع، حرفه‌ای</p>
-    <div class="neon-line-mid"></div>
-    <div class="neon-badges">
-        <span class="neon-badge">🎯 دقت بالا</span>
-        <span class="neon-badge">🌐 فارسی + انگلیسی</span>
-        <span class="neon-badge">🔄 ترجمه</span>
-        <span class="neon-badge">📥 دانلود</span>
+    <p class="subtitle">صدا را به متن تبدیل کن — دقیق، سریع، حرفه‌ای</p>
+    <div class="hero-badges">
+        <span class="hero-badge">🎯 دقت بالا</span>
+        <span class="hero-badge">🌐 فارسی + انگلیسی</span>
+        <span class="hero-badge">🔄 ترجمه</span>
+        <span class="hero-badge">📥 دانلود</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -327,10 +312,8 @@ def llm_correct(raw_text, lang="fa"):
    - «چه خواهد» → «چه خبر»
    - «اهمونی» → «مهمونی»
    - «پی ایس» → «پی اس»
-4. فقط اگه کلمه‌ای کاملاً نامفهوم بود و جایگزین منطقی نداشت، همون رو نگه دار
-5. نقطه‌گذاری و علائم سجاوندی اضافه کن
-6. فقط متن اصلاح‌شده رو برگردون — بدون هیچ توضیح، پرانتز، یا عبارت اضافه
-7. هرگز متن اصلی رو کنار جواب ننویس"""
+4. نقطه‌گذاری و علائم سجاوندی اضافه کن
+5. فقط متن اصلاح‌شده رو برگردون — بدون هیچ توضیح اضافه"""
     else:
         system = "Professional text editor. Fix obvious mishearings only. NEVER delete words or change numbers. Add punctuation. Return only corrected text."
 
@@ -503,13 +486,10 @@ MP3، WAV، M4A، OGG، WEBM، FLAC. حداکثر ۲۵ مگابایت.
 
 **چه زبان‌هایی پشتیبانی می‌شه؟**  
 فعلاً فارسی و انگلیسی. زبان‌های بیشتر به‌زودی.
-
-**آیا می‌تونم متن رو ویرایش کنم؟**  
-بله، بعد از تبدیل، متن نهایی در فیلد قابل ویرایش نمایش داده می‌شه.
 """)
 
 # ============================================================
-# نمایش مصرف + دکمه ریست مخفی
+# شمارنده + دکمه ریست مخفی
 # ============================================================
 remaining = max(0, FREE_LIMIT - st.session_state.usage_count)
 st.markdown(f'<div class="usage-info">🎁 استفاده‌ی رایگان امروز: <strong>{remaining} از {FREE_LIMIT}</strong> فایل باقی مانده</div>', unsafe_allow_html=True)
