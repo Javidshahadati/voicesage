@@ -152,38 +152,7 @@ def translate_text(text, source_lang):
     r.raise_for_status()
     return r.json().get("result", {}).get("translated_text", "").strip()
     
-    # مرحله ۲: روان‌سازی با Llama
-    url_llm = f"{CF_BASE}/v1/chat/completions"
-    target_lang_name = "English" if source_lang == "fa" else "Persian"
-    
-    system = f"""You are a professional translator. Polish the following {target_lang_name} translation to sound natural.
 
-STRICT RULES:
-- Do NOT change the meaning
-- Do NOT add any words not in the original translation
-- Do NOT delete any information
-- Only fix grammar, word order, and phrasing
-- Return ONLY the polished text, no explanation, no quotes"""
-
-    payload_llm = {
-        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": raw_translation},
-        ],
-        "max_tokens": 1500,
-        "temperature": 0.2,
-    }
-    
-    try:
-        r2 = requests.post(url_llm, headers=headers, json=payload_llm, timeout=60)
-        r2.raise_for_status()
-        polished = r2.json()["choices"][0]["message"]["content"].strip()
-        if len(polished) < len(raw_translation) * 0.6:
-            return raw_translation
-        return polished
-    except Exception:
-        return raw_translation
 
 def summarize_text(text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
