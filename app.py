@@ -17,16 +17,17 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'Vazirmatn', -apple-system, sans-serif !important; }
 code, pre { font-family: 'Inter', monospace !important; }
 .hero {
-    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #db2777 100%);
-    padding: 3rem 1.5rem;
-    border-radius: 28px;
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 40%, #db2777 100%);
+    padding: 4rem 2rem;
+    border-radius: 32px;
     color: white;
     text-align: center;
-    margin-bottom: 2.5rem;
-    box-shadow: 0 20px 60px rgba(30, 64, 175, 0.35);
+    margin-bottom: 3rem;
+    box-shadow: 0 30px 80px rgba(30, 64, 175, 0.45);
     position: relative;
     overflow: hidden;
-    animation: heroFadeIn 0.8s ease-out;
+    animation: heroFadeIn 1s ease-out;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 .hero::before {
     content: '';
@@ -35,60 +36,80 @@ code, pre { font-family: 'Inter', monospace !important; }
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
-    animation: heroPulse 6s ease-in-out infinite;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 55%);
+    animation: heroPulse 5s ease-in-out infinite;
+    pointer-events: none;
+}
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    right: -30%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(219,39,119,0.4) 0%, transparent 70%);
+    animation: heroPulse 7s ease-in-out infinite reverse;
     pointer-events: none;
 }
 .hero h1 {
-    font-size: 3rem;
-    font-weight: 800;
+    font-size: 3.8rem;
+    font-weight: 900;
     margin: 0;
     color: white !important;
     position: relative;
-    z-index: 1;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    z-index: 2;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.25);
+    letter-spacing: -1px;
+    animation: heroSlideUp 0.8s ease-out;
 }
 .hero p {
-    font-size: 1.2rem;
+    font-size: 1.35rem;
     opacity: 0.95;
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     position: relative;
-    z-index: 1;
+    z-index: 2;
     font-weight: 400;
+    animation: heroSlideUp 1s ease-out;
 }
 .badges {
     display: flex;
     justify-content: center;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
+    gap: 0.75rem;
+    margin-top: 2rem;
     flex-wrap: wrap;
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    animation: heroSlideUp 1.2s ease-out;
 }
 .badge {
-    background: rgba(255,255,255,0.22);
-    padding: 0.5rem 1.1rem;
-    border-radius: 24px;
-    font-size: 0.88rem;
-    border: 1px solid rgba(255,255,255,0.35);
-    backdrop-filter: blur(10px);
-    font-weight: 500;
-    transition: all 0.2s ease;
+    background: rgba(255,255,255,0.25);
+    padding: 0.65rem 1.3rem;
+    border-radius: 28px;
+    font-size: 0.95rem;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(12px);
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 .badge:hover {
-    background: rgba(255,255,255,0.35);
-    transform: translateY(-2px);
+    background: rgba(255,255,255,0.4);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 @keyframes heroFadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 @keyframes heroPulse {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.1); opacity: 0.9; }
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+    50% { transform: scale(1.15) rotate(10deg); opacity: 1; }
 }
-.
+@keyframes heroSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 .stButton > button {
     background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
     color: white !important; border: none; border-radius: 12px;
