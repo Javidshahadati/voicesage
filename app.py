@@ -88,10 +88,7 @@ code, pre { font-family: 'Inter', monospace !important; }
     0%, 100% { transform: scale(1); opacity: 0.6; }
     50% { transform: scale(1.1); opacity: 0.9; }
 }
-.hero h1 { font-size: 2.8rem; font-weight: 800; margin: 0; color: white !important; }
-.hero p { font-size: 1.1rem; opacity: 0.95; margin-top: 0.75rem; }
-.badges { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
-.badge { background: rgba(255,255,255,0.25); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.3); }
+.
 .stButton > button {
     background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
     color: white !important; border: none; border-radius: 12px;
