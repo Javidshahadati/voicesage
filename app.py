@@ -332,14 +332,42 @@ def llm_correct(raw_text, lang="fa"):
 
 
 def translate_text(text, source_lang):
-    target_code = "en" if source_lang == "fa" else "fa"
-    url = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
-    headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
-    payload = {"text": text, "source_lang": source_lang, "target_lang": target_code}
-    r = requests.post(url, headers=headers, json=payload, timeout=60)
-    r.raise_for_status()
-    return r.json().get("result", {}).get("translated_text", "").strip()
+    # استفاده از Groq (Llama 3.3 70B) برای ترجمه با درک زمینه
+    if not GROQ_API_KEY:
+        return "خطا: کلید Groq یافت نشد."
 
+    target_lang = "English" if source_lang == "fa" else "Persian"
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    
+    system_prompt = f"""You are a professional translator. Translate the following text from {"Persian" if source_lang == "fa" else "English"} to {target_lang}.
+
+RULES:
+- Translate the MEANING, not word-by-word.
+- Understand the context. For example, in sports/football, «گل زدم» means "scored a goal" (NOT "bought a flower").
+- «پی اس» means "PS" or "PlayStation" (NOT "PC").
+- Do NOT add extra words (like "us" or "a glass of") that are not in the original text.
+- Return ONLY the translation, no explanations."""
+
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": text},
+        ],
+        "temperature": 0.2,
+        "max_tokens": 1500,
+    }
+
+    try:
+        r = requests.post(url, headers=headers, json=payload, timeout=60)
+        r.raise_for_status()
+        return r.json()["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        return f"خطا در ترجمه: {e}"
 
 def summarize_text(text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
