@@ -13,144 +13,264 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-html, body, [class*="css"] { font-family: 'Vazirmatn', -apple-system, sans-serif !important; }
-code, pre { font-family: 'Inter', monospace !important; }
-.hero {
-    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 40%, #db2777 100%);
-    padding: 4rem 2rem;
-    border-radius: 32px;
-    color: white;
-    text-align: center;
-    margin-bottom: 3rem;
-    box-shadow: 0 30px 80px rgba(30, 64, 175, 0.45);
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Vazirmatn', sans-serif !important;
+    background: #000 !important;
+}
+.stApp { background: transparent !important; }
+.block-container {
+    padding-top: 2rem !important;
+    max-width: 900px !important;
+}
+
+/* شبکه‌ی نئون پس‌زمینه */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 0;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
+}
+
+/* Hero */
+.neon-hero {
     position: relative;
-    overflow: hidden;
-    animation: heroFadeIn 1s ease-out;
-    border: 1px solid rgba(255,255,255,0.1);
+    z-index: 1;
+    text-align: center;
+    padding: 2rem 1rem 3rem;
 }
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 55%);
-    animation: heroPulse 5s ease-in-out infinite;
-    pointer-events: none;
+.neon-line-top {
+    width: 100px;
+    height: 2px;
+    background: #06b6d4;
+    margin: 0 auto 2rem;
+    box-shadow:
+        0 0 10px #06b6d4,
+        0 0 25px #06b6d4,
+        0 0 50px #06b6d4;
+    animation: lineGlow 2s ease-in-out infinite alternate;
 }
-.hero::after {
-    content: '';
-    position: absolute;
-    bottom: -30%;
-    right: -30%;
-    width: 60%;
-    height: 60%;
-    background: radial-gradient(circle, rgba(219,39,119,0.4) 0%, transparent 70%);
-    animation: heroPulse 7s ease-in-out infinite reverse;
-    pointer-events: none;
-}
-.hero h1 {
-    font-size: 3.8rem;
+.neon-hero h1 {
+    font-size: 4rem;
     font-weight: 900;
     margin: 0;
-    color: white !important;
-    position: relative;
-    z-index: 2;
-    text-shadow: 0 4px 30px rgba(0,0,0,0.25);
-    letter-spacing: -1px;
-    animation: heroSlideUp 0.8s ease-out;
+    letter-spacing: -2px;
+    line-height: 1;
+    color: #fff;
+    text-shadow:
+        0 0 10px rgba(236, 72, 153, 0.9),
+        0 0 30px rgba(236, 72, 153, 0.7),
+        0 0 60px rgba(236, 72, 153, 0.4);
+    animation: textPulse 3s ease-in-out infinite alternate;
 }
-.hero p {
-    font-size: 1.35rem;
-    opacity: 0.95;
-    margin-top: 1rem;
-    position: relative;
-    z-index: 2;
+.neon-hero p {
+    font-size: 1.5rem;   /* ← فارسی بزرگ‌تر */
+    color: #06b6d4;
+    margin: 1.5rem 0;
     font-weight: 400;
-    animation: heroSlideUp 1s ease-out;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    text-shadow:
+        0 0 10px rgba(6, 182, 212, 0.7),
+        0 0 25px rgba(6, 182, 212, 0.4);
 }
-.badges {
+.neon-line-mid {
+    width: 100%;
+    max-width: 500px;
+    height: 1px;
+    margin: 0 auto 2rem;
+    background: linear-gradient(90deg, transparent, #ec4899, #06b6d4, #a855f7, transparent);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+}
+.neon-badges {
     display: flex;
     justify-content: center;
     gap: 0.75rem;
-    margin-top: 2rem;
     flex-wrap: wrap;
-    position: relative;
-    z-index: 2;
-    animation: heroSlideUp 1.2s ease-out;
+    margin-top: 2rem;
 }
-.badge {
-    background: rgba(255,255,255,0.25);
-    padding: 0.65rem 1.3rem;
-    border-radius: 28px;
-    font-size: 0.95rem;
-    border: 1.5px solid rgba(255,255,255,0.4);
-    backdrop-filter: blur(12px);
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+.neon-badge {
+    padding: 0.7rem 1.4rem;
+    background: transparent;
+    border: 1px solid #06b6d4;
+    border-radius: 6px;
+    font-size: 1rem;   /* ← فارسی بزرگ‌تر */
+    color: #06b6d4;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+    box-shadow:
+        0 0 10px rgba(6, 182, 212, 0.2),
+        inset 0 0 10px rgba(6, 182, 212, 0.05);
+    transition: all 0.3s;
 }
-.badge:hover {
-    background: rgba(255,255,255,0.4);
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+.neon-badge:hover {
+    background: rgba(6, 182, 212, 0.1);
+    box-shadow:
+        0 0 20px rgba(6, 182, 212, 0.5),
+        inset 0 0 15px rgba(6, 182, 212, 0.1);
 }
 
-@keyframes heroFadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+@keyframes lineGlow {
+    from { box-shadow: 0 0 10px #06b6d4, 0 0 25px #06b6d4, 0 0 50px #06b6d4; }
+    to { box-shadow: 0 0 15px #06b6d4, 0 0 35px #06b6d4, 0 0 70px #06b6d4; }
 }
-@keyframes heroPulse {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
-    50% { transform: scale(1.15) rotate(10deg); opacity: 1; }
+@keyframes textPulse {
+    from { text-shadow: 0 0 10px rgba(236,72,153,0.9), 0 0 30px rgba(236,72,153,0.7), 0 0 60px rgba(236,72,153,0.4); }
+    to { text-shadow: 0 0 15px rgba(236,72,153,1), 0 0 40px rgba(236,72,153,0.9), 0 0 80px rgba(236,72,153,0.6); }
 }
-@keyframes heroSlideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+
+/* دکمه‌ها */
 .stButton > button {
-    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
-    color: white !important; border: none; border-radius: 12px;
-    padding: 0.65rem 1.5rem; font-weight: 600; font-size: 1rem;
-    transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+    background: transparent !important;
+    color: #06b6d4 !important;
+    border: 1.5px solid #06b6d4 !important;
+    border-radius: 8px !important;
+    padding: 0.8rem 1.6rem !important;   /* ← بزرگ‌تر */
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;   /* ← فارسی بزرگ‌تر */
+    letter-spacing: 0.5px !important;
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2) !important;
+    transition: all 0.3s !important;
 }
-.stButton > button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35); }
-div[data-testid="stFileUploader"] { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 1rem; background: #f8fafc; }
-.stTextArea textarea { border-radius: 12px; border: 1px solid #e2e8f0; font-family: 'Vazirmatn', sans-serif !important; font-size: 1rem; line-height: 1.8; }
-.section-title { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin: 1.5rem 0 1rem 0; padding-right: 0.75rem; border-right: 4px solid #7c3aed; }
-.stat-card { background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border-radius: 12px; padding: 1rem; text-align: center; border: 1px solid #e2e8f0; }
-.stat-value { font-size: 1.75rem; font-weight: 800; color: #1e40af; }
-.stat-label { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
-.pricing-card { border-radius: 20px; padding: 1.5rem; text-align: center; border: 2px solid #e2e8f0; background: white; }
-.pricing-card.pro { border-color: #7c3aed; background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15); }
-.pricing-title { font-size: 1.3rem; font-weight: 700; color: #1e293b; }
-.pricing-price { font-size: 2.2rem; font-weight: 800; color: #1e40af; margin: 0.5rem 0; }
-.pricing-price.pro { color: #7c3aed; }
-.pricing-features { text-align: right; font-size: 0.9rem; color: #475569; margin-top: 1rem; list-style: none; padding: 0; }
-.pricing-features li { margin: 0.4rem 0; }
-.usage-info { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.9rem; color: #3730a3; text-align: center; margin-bottom: 1rem; }
-#MainMenu {visibility: hidden;} footer {visibility: hidden;}
+.stButton > button:hover {
+    background: rgba(6, 182, 212, 0.1) !important;
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.5) !important;
+    color: #67e8f9 !important;
+}
+
+/* فایل آپلودر */
+div[data-testid="stFileUploader"] {
+    border: 2px dashed rgba(6, 182, 212, 0.4);
+    border-radius: 16px;
+    padding: 1rem;
+    background: rgba(6, 182, 212, 0.03);
+    box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.05);
+}
+
+/* Textarea */
+.stTextArea textarea {
+    background: rgba(10, 10, 15, 0.9) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(6, 182, 212, 0.3) !important;
+    font-family: 'Vazirmatn', sans-serif !important;
+    font-size: 1.05rem !important;   /* ← فارسی بزرگ‌تر */
+    line-height: 1.9 !important;
+    box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05) !important;
+}
+
+/* عنوان بخش‌ها */
+.section-title {
+    font-size: 1.5rem;   /* ← فارسی بزرگ‌تر */
+    font-weight: 700;
+    color: #06b6d4;
+    margin: 2rem 0 1rem 0;
+    padding-right: 0.75rem;
+    border-right: 3px solid #ec4899;
+    text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+/* کارت آمار */
+.stat-card {
+    background: rgba(10, 10, 15, 0.8);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05);
+}
+.stat-value {
+    font-size: 2rem;   /* ← بزرگ‌تر */
+    font-weight: 800;
+    color: #06b6d4;
+    text-shadow: 0 0 15px rgba(6, 182, 212, 0.7);
+}
+.stat-label-old {
+    font-size: 0.95rem;   /* ← بزرگ‌تر */
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: 0.25rem;
+}
+
+/* Usage info */
+.usage-info {
+    background: rgba(236, 72, 153, 0.08);
+    border: 1px solid rgba(236, 72, 153, 0.35);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 1.05rem;   /* ← بزرگ‌تر */
+    color: #fbcfe8;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+}
+
+/* Pricing cards */
+.pricing-card {
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    background: rgba(10, 10, 15, 0.8);
+    box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.05);
+}
+.pricing-card.pro {
+    border-color: rgba(236, 72, 153, 0.5);
+    background: rgba(236, 72, 153, 0.05);
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.2), inset 0 0 30px rgba(236, 72, 153, 0.05);
+}
+.pricing-title { font-size: 1.3rem; font-weight: 700; color: #fff; }
+.pricing-price { font-size: 2.2rem; font-weight: 800; color: #06b6d4; margin: 0.5rem 0; text-shadow: 0 0 15px rgba(6,182,212,0.5); }
+.pricing-price.pro { color: #ec4899; text-shadow: 0 0 15px rgba(236,72,153,0.5); }
+.pricing-features { text-align: right; font-size: 1rem; color: rgba(255,255,255,0.75); margin-top: 1rem; list-style: none; padding: 0; line-height: 1.9; }
+.pricing-features li { margin: 0.5rem 0; }
+
+/* Mobile */
+@media (max-width: 600px) {
+    .neon-hero h1 { font-size: 2.6rem; letter-spacing: -1px; }
+    .neon-hero p { font-size: 1.15rem; }
+    .neon-badge { font-size: 0.9rem; padding: 0.6rem 1.1rem; }
+    .neon-line-top { margin-bottom: 1.5rem; }
+    .section-title { font-size: 1.3rem; }
+}
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-FREE_LIMIT = 3
-if "usage_count" not in st.session_state:
-    st.session_state.usage_count = 0
-
+# ============================================================
+# Hero
+# ============================================================
 st.markdown("""
-<div class="hero">
+<div class="neon-hero">
+    <div class="neon-line-top"></div>
     <h1>🎙️ VoiceSage</h1>
     <p>صدا را به متن تبدیل کن — دقیق، سریع، حرفه‌ای</p>
-    <div class="badges">
-        <span class="badge">🎯 دقت بالا</span>
-        <span class="badge">🌐 فارسی + انگلیسی</span>
-        <span class="badge">🔄 ترجمه</span>
-        <span class="badge">📥 دانلود</span>
+    <div class="neon-line-mid"></div>
+    <div class="neon-badges">
+        <span class="neon-badge">🎯 دقت بالا</span>
+        <span class="neon-badge">🌐 فارسی + انگلیسی</span>
+        <span class="neon-badge">🔄 ترجمه</span>
+        <span class="neon-badge">📥 دانلود</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# ============================================================
+# Session
+# ============================================================
+FREE_LIMIT = 3
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
 
 CF_ACCOUNT_ID = st.secrets["CF_ACCOUNT_ID"]
 CF_API_TOKEN = st.secrets["CF_API_TOKEN"]
@@ -227,16 +347,15 @@ def llm_correct(raw_text, lang="fa"):
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
 
+
 def translate_text(text, source_lang):
     target_code = "en" if source_lang == "fa" else "fa"
     url = f"{CF_BASE}/run/@cf/meta/m2m100-1.2b"
     headers = {"Authorization": f"Bearer {CF_API_TOKEN}", "Content-Type": "application/json"}
     payload = {"text": text, "source_lang": source_lang, "target_lang": target_code}
-
     r = requests.post(url, headers=headers, json=payload, timeout=60)
     r.raise_for_status()
     return r.json().get("result", {}).get("translated_text", "").strip()
-    
 
 
 def summarize_text(text, lang="fa"):
@@ -308,7 +427,7 @@ def word_count(text):
 
 
 # ============================================================
-# بخش قیمت‌ها
+# قیمت‌ها
 # ============================================================
 with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
     col_free, col_pro = st.columns(2)
@@ -352,7 +471,7 @@ with st.expander("ℹ️ درباره VoiceSage", expanded=False):
 ### 🎯 چرا VoiceSage؟
 - 🎯 **دقت بالا** — مدل Whisper پیشرفته + اصلاح با AI
 - 🌐 **دوزبانه** — فارسی و انگلیسی
-- 🔄 **ترجمه** — با درک زمینه (context-aware)
+- 🔄 **ترجمه** — با درک زمینه
 - 📝 **خلاصه** — خودکار از متن
 - 🏷️ **کلمات کلیدی** — استخراج خودکار
 - 📥 **دانلود** — TXT، SRT، VTT
@@ -395,7 +514,6 @@ MP3، WAV، M4A، OGG، WEBM، FLAC. حداکثر ۲۵ مگابایت.
 remaining = max(0, FREE_LIMIT - st.session_state.usage_count)
 st.markdown(f'<div class="usage-info">🎁 استفاده‌ی رایگان امروز: <strong>{remaining} از {FREE_LIMIT}</strong> فایل باقی مانده</div>', unsafe_allow_html=True)
 
-# دکمه ریست مخفی (فقط با پارامتر admin)
 admin_mode = st.query_params.get("admin") == "MY_SECRET_2026"
 if admin_mode and st.session_state.usage_count > 0:
     if st.button("🔄 ریست تست (ادمین)", key="reset_usage"):
@@ -455,13 +573,13 @@ if "corrected" in st.session_state:
     st.markdown(f'<div class="section-title">📊 آمار (منبع: {provider})</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown(f'<div class="stat-card"><div class="stat-value">{word_count(corrected)}</div><div class="stat-label">کلمه</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><div class="stat-value">{word_count(corrected)}</div><div class="stat-label-old">کلمه</div></div>', unsafe_allow_html=True)
     with c2:
-        st.markdown(f'<div class="stat-card"><div class="stat-value">{len(corrected)}</div><div class="stat-label">کاراکتر</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><div class="stat-value">{len(corrected)}</div><div class="stat-label-old">کاراکتر</div></div>', unsafe_allow_html=True)
     with c3:
         flag = "🇮🇷" if lang == "fa" else "🇬🇧"
         lang_name = "فارسی" if lang == "fa" else "English"
-        st.markdown(f'<div class="stat-card"><div class="stat-value">{flag}</div><div class="stat-label">{lang_name}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><div class="stat-value">{flag}</div><div class="stat-label-old">{lang_name}</div></div>', unsafe_allow_html=True)
 
     if st.session_state.get("llm_error"):
         st.warning(f"⚠️ LLM اصلاح نشد: {st.session_state.llm_error}")
@@ -469,7 +587,6 @@ if "corrected" in st.session_state:
     st.markdown('<div class="section-title">✨ متن نهایی</div>', unsafe_allow_html=True)
     final_text = st.text_area("ویرایش:", corrected, height=200, label_visibility="collapsed")
 
-    # خلاصه + کلمات کلیدی
     col_s, col_k = st.columns(2)
     with col_s:
         if st.button("📝 خلاصه کن", use_container_width=True):
@@ -494,7 +611,6 @@ if "corrected" in st.session_state:
     with st.expander("📝 متن خام"):
         st.code(raw or "(خالی)", language=None)
 
-    # دانلود
     st.markdown('<div class="section-title">📥 دانلود</div>', unsafe_allow_html=True)
     d1, d2, d3 = st.columns(3)
     with d1:
@@ -504,7 +620,6 @@ if "corrected" in st.session_state:
     with d3:
         st.download_button("🎞️ VTT", data=make_vtt(final_text).encode("utf-8"), file_name=f"voicesage_{lang}.vtt", mime="text/vtt", use_container_width=True)
 
-    # ترجمه
     st.markdown('<div class="section-title">🌐 ترجمه</div>', unsafe_allow_html=True)
     target_name = "انگلیسی" if lang == "fa" else "فارسی"
     if st.button(f"🔄 ترجمه به {target_name}"):
@@ -517,7 +632,6 @@ if "corrected" in st.session_state:
         st.success(st.session_state.translated)
         st.download_button("📄 دانلود ترجمه", data=st.session_state.translated.encode("utf-8"), file_name=f"translation.txt", mime="text/plain")
 
-    # Feedback
     st.markdown("---")
     fb_key = "feedback_state"
     if st.session_state.get(fb_key) == "up":
