@@ -86,6 +86,44 @@ code, pre { font-family: 'Inter', monospace !important; }
     transform: translateY(-2px);
 }
 
+/* ============ Wave Decoration ============ */
+.wave-decoration {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    height: 50px;
+    margin: -1rem auto 2rem;
+    position: relative;
+    z-index: 10;
+}
+.wave-decoration span {
+    width: 6px;
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #7c3aed 0%, #1e40af 100%);
+    animation: waveFloat 1.4s ease-in-out infinite;
+    opacity: 0.8;
+}
+.wave-decoration span:nth-child(1)  { animation-delay: 0s;    }
+.wave-decoration span:nth-child(2)  { animation-delay: 0.1s;  }
+.wave-decoration span:nth-child(3)  { animation-delay: 0.2s;  }
+.wave-decoration span:nth-child(4)  { animation-delay: 0.3s;  }
+.wave-decoration span:nth-child(5)  { animation-delay: 0.4s;  }
+.wave-decoration span:nth-child(6)  { animation-delay: 0.5s;  }
+.wave-decoration span:nth-child(7)  { animation-delay: 0.6s;  }
+.wave-decoration span:nth-child(8)  { animation-delay: 0.5s;  }
+.wave-decoration span:nth-child(9)  { animation-delay: 0.4s;  }
+.wave-decoration span:nth-child(10) { animation-delay: 0.3s;  }
+.wave-decoration span:nth-child(11) { animation-delay: 0.2s;  }
+.wave-decoration span:nth-child(12) { animation-delay: 0.1s;  }
+.wave-decoration span:nth-child(13) { animation-delay: 0s;    }
+
+@keyframes waveFloat {
+    0%, 100% { height: 12px; opacity: 0.5; }
+    50%      { height: 42px; opacity: 1;   }
+}
+
 /* ============ Section titles ============ */
 .section-title {
     font-size: 1.4rem;
@@ -235,7 +273,7 @@ footer {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 # ============================================================
-# Hero
+# Hero & Wave
 # ============================================================
 st.markdown("""
 <div class="hero">
@@ -248,10 +286,16 @@ st.markdown("""
         <span class="hero-badge">📥 دانلود</span>
     </div>
 </div>
+<div class="wave-decoration">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span>
+</div>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# Session
+# Session & Secrets
 # ============================================================
 FREE_LIMIT = 3
 if "usage_count" not in st.session_state:
@@ -263,7 +307,9 @@ CF_BASE = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai"
 GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "")
 MAX_FILE_MB = 25
 
-
+# ============================================================
+# توابع اصلی
+# ============================================================
 def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
     if GROQ_API_KEY:
         try:
@@ -277,8 +323,6 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
             return None, f"Groq error {r.status_code}"
         except requests.exceptions.Timeout:
             return None, "زمان درخواست به Groq به پایان رسید"
-        except requests.exceptions.ConnectionError:
-            return None, "اتصال به Groq برقرار نشد"
         except Exception as e:
             return None, f"Groq error: {e}"
     try:
@@ -289,8 +333,6 @@ def whisper_transcribe(audio_bytes, lang="fa", filename="audio.wav"):
         r = requests.post(url, headers=headers, json=payload, timeout=180)
         r.raise_for_status()
         return r.json().get("result", {}).get("text", "").strip(), "Cloudflare"
-    except requests.exceptions.Timeout:
-        return None, "زمان درخواست به Cloudflare به پایان رسید"
     except Exception as e:
         return None, f"Cloudflare error: {e}"
 
@@ -326,7 +368,7 @@ def llm_correct(raw_text, lang="fa"):
 
 
 def translate_text(text, source_lang):
-    # استفاده از Groq (Llama 3.3 70B) برای ترجمه با درک زمینه
+    # استفاده از Groq برای ترجمه هوشمند
     if not GROQ_API_KEY:
         return "خطا: کلید Groq یافت نشد."
 
@@ -340,10 +382,11 @@ def translate_text(text, source_lang):
     system_prompt = f"""You are a professional translator. Translate the following text from {"Persian" if source_lang == "fa" else "English"} to {target_lang}.
 
 RULES:
+- The source text is an AI transcript and MAY CONTAIN misheard words (e.g., «سبعدار» instead of «سیب‌دار» meaning "apple orchard", «آدی» instead of «آدمی»).
+- Use the context of the story to understand the INTENDED meaning and translate that, NOT the literal typo.
 - Translate the MEANING, not word-by-word.
 - Understand the context. For example, in sports/football, «گل زدم» means "scored a goal" (NOT "bought a flower").
-- «پی اس» means "PS" or "PlayStation" (NOT "PC").
-- Do NOT add extra words (like "us" or "a glass of") that are not in the original text.
+- Do NOT add extra words that are not in the original text.
 - Return ONLY the translation, no explanations."""
 
     payload = {
@@ -362,6 +405,7 @@ RULES:
         return r.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"خطا در ترجمه: {e}"
+
 
 def summarize_text(text, lang="fa"):
     url = f"{CF_BASE}/v1/chat/completions"
@@ -432,7 +476,7 @@ def word_count(text):
 
 
 # ============================================================
-# قیمت‌ها
+# Expanders (قیمت‌ها، درباره، سوالات متداول)
 # ============================================================
 with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
     col_free, col_pro = st.columns(2)
@@ -466,9 +510,6 @@ with st.expander("💎 پلن‌ها و قیمت‌ها", expanded=False):
         """, unsafe_allow_html=True)
     st.caption("⚠️ پرداخت پلن حرفه‌ای به‌زودی فعال می‌شود.")
 
-# ============================================================
-# About + FAQ
-# ============================================================
 with st.expander("ℹ️ درباره VoiceSage", expanded=False):
     st.markdown("""
 **VoiceSage** ابزار هوش مصنوعی برای تبدیل صدا به متن است — فارسی و انگلیسی.
@@ -476,7 +517,7 @@ with st.expander("ℹ️ درباره VoiceSage", expanded=False):
 ### 🎯 چرا VoiceSage؟
 - 🎯 **دقت بالا** — مدل Whisper پیشرفته + اصلاح با AI
 - 🌐 **دوزبانه** — فارسی و انگلیسی
-- 🔄 **ترجمه** — با درک زمینه
+- 🔄 **ترجمه** — با درک زمینه (Context-Aware)
 - 📝 **خلاصه** — خودکار از متن
 - 🏷️ **کلمات کلیدی** — استخراج خودکار
 - 📥 **دانلود** — TXT، SRT، VTT
@@ -511,7 +552,7 @@ MP3، WAV، M4A، OGG، WEBM، FLAC. حداکثر ۲۵ مگابایت.
 """)
 
 # ============================================================
-# شمارنده + دکمه ریست مخفی
+# شمارنده مصرف + دکمه ریست مخفی
 # ============================================================
 remaining = max(0, FREE_LIMIT - st.session_state.usage_count)
 st.markdown(f'<div class="usage-info">🎁 استفاده‌ی رایگان امروز: <strong>{remaining} از {FREE_LIMIT}</strong> فایل باقی مانده</div>', unsafe_allow_html=True)
@@ -527,7 +568,7 @@ if st.session_state.usage_count >= FREE_LIMIT:
     st.stop()
 
 # ============================================================
-# آپلود
+# آپلود فایل
 # ============================================================
 st.markdown('<div class="section-title">📤 آپلود فایل صوتی</div>', unsafe_allow_html=True)
 col1, col2 = st.columns([2, 1])
